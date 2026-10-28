@@ -1,0 +1,44 @@
+# deliberately INSECURE example — every rule fires; do not copy
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  pull_request_target:
+  schedule:
+    - cron: "30 5 * * 1"
+
+permissions: write-all
+
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Checkout fork head
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Build
+        run: |
+          echo "Building ${{ github.event.head_commit.message }}"
+          echo "token=\${{ secrets.GITHUB_TOKEN }}"
+          curl -sSL https://install.example.com/bootstrap.sh | sudo bash
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: .cache
+          key: build-${{ github.sha }}
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cool community action
+        uses: some-random-org/cool-action@main
+      - name: Call deploy helper
+        uses: ./deploy-helper.yml
+        secrets: inherit
+      - name: Remote installer
+        run: wget -qO- https://cdn.example.dev/install.py | python3

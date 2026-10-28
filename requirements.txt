@@ -1,0 +1,3 @@
+# wfshield is intentionally zero-dependency.
+# Everything it needs ships with the Python standard library (3.9+).
+# This file exists so dependency managers see an explicit, empty manifest.

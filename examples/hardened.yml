@@ -1,0 +1,37 @@
+# hardened reference workflow — the house style wfshield enforces
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (pinned)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Build
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          echo "commit message: $COMMIT_MSG"
+          ./scripts/build.sh
+      - name: Use token safely
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/build.sh
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Third-party helper (pinned)
+        uses: shipkits/cool-action@8bd71901bbe5b1630ceea73d27597364c9af683 # v2.1.0
+      - name: wfshield self-audit
+        run: |
+          pipx install wfshield
+          wfshield .github/workflows
